@@ -1,10 +1,10 @@
-package hello.servlet.web.frontcontroller.v3;
+package hello.servlet.web.frontcontroller.v4;
 
-import hello.servlet.web.frontcontroller.ModelView;
 import hello.servlet.web.frontcontroller.MyView;
-import hello.servlet.web.frontcontroller.v3.controller.MemberFormControllerV3;
-import hello.servlet.web.frontcontroller.v3.controller.MemberListControllerV3;
-import hello.servlet.web.frontcontroller.v3.controller.MemberSaveControllerV3;
+
+import hello.servlet.web.frontcontroller.v4.controller.MemberFormControllerV4;
+import hello.servlet.web.frontcontroller.v4.controller.MemberListControllerV4;
+import hello.servlet.web.frontcontroller.v4.controller.MemberSaveControllerV4;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -16,19 +16,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-// urlPatterns 의 v3/* 에 의해 v3 하위에 어떤 경로가 들어와도 이 서블릿은 호출이 된다.
-@WebServlet(name = "frontControllerServletV3", urlPatterns = "/front-controller/v3/*")
-public class FrontControllerServletV3 extends HttpServlet{
+// urlPatterns 의 v4/* 에 의해 v4 하위에 어떤 경로가 들어와도 이 서블릿은 호출이 된다.
+@WebServlet(name = "frontControllerServletV4", urlPatterns = "/front-controller/v4/*")
+public class FrontControllerServletV4 extends HttpServlet{
 
     // 매핑정보를 저장하기 위한 HaspMap
     // key 와 value 로 url 과 controller 를 설정
-    private Map<String, ControllerV3> controllerMap = new HashMap<>();
+    private Map<String, ControllerV4> controllerMap = new HashMap<>();
 
     // 생성자가 호출될 때 url 에 맞는 컨트롤러를 저장
-    public FrontControllerServletV3() {
-        controllerMap.put("/front-controller/v3/members/new-form", new MemberFormControllerV3());
-        controllerMap.put("/front-controller/v3/members/save", new MemberSaveControllerV3());
-        controllerMap.put("/front-controller/v3/members", new MemberListControllerV3());
+    public FrontControllerServletV4() {
+        controllerMap.put("/front-controller/v4/members/new-form", new MemberFormControllerV4());
+        controllerMap.put("/front-controller/v4/members/save", new MemberSaveControllerV4());
+        controllerMap.put("/front-controller/v4/members", new MemberListControllerV4());
     }
 
     @Override
@@ -38,7 +38,7 @@ public class FrontControllerServletV3 extends HttpServlet{
         String requestURI = req.getRequestURI();
 
         // 획득한 uri 로 HashMap 을 조회하여 컨트롤러 획득
-        ControllerV3 controller = controllerMap.get(requestURI);
+        ControllerV4 controller = controllerMap.get(requestURI);
         if(controller == null){
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND); // 404
             return;
@@ -48,15 +48,15 @@ public class FrontControllerServletV3 extends HttpServlet{
 
         // 파라미터 데이터 획득
         Map<String, String> paramMap = createParamMap(req);
+        Map<String, Object> model = new HashMap<>();
 
         // 파라미터 전달
-        ModelView mv = controller.process(paramMap);
+        String viewName = controller.process(paramMap, model);
 
         // 논리 이름을 물리 이름으로 변환
-        String viewName = mv.getViewName();
         MyView view = viewResolve(viewName);
 
-        view.render(mv.getModel(), req, resp);
+        view.render(model, req, resp);
     }
 
     // 컨트롤러의 동작 레벨에 비해 디테일한 로직은 별도의 메서드로 분리
